@@ -1,0 +1,26 @@
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import Navbar from '@/widgets/header/Navbar';
+import Footer from '@/widgets/footer/Footer';
+import { motion } from 'framer-motion';
+import ChatbotWidget from '@/components/chatbot/ChatbotWidget.jsx';
+
+const Layout = () => {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <motion.main 
+        className="flex-grow"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Outlet />
+      </motion.main>
+      <Footer />
+      <ChatbotWidget />
+    </div>
+  );
+};
+
+export default Layout;
