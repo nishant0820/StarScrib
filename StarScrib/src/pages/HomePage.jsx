@@ -276,11 +276,33 @@ const CategoriesSection = () => {
 
 const TestimonialSection = () => {
   const { theme } = useTheme();
-  const testimonials = [
-    { name: "Priya Sharma", role: "Art Student", text: "The quality of the art supplies I purchased from StarScrib is exceptional. The watercolor set has such vibrant colors, and the brushes are perfect for detailed work.", avatar: "https://images.unsplash.com/photo-1544212408-c711b7c19b92" },
-    { name: "Rajesh Patel", role: "Business Owner", text: "I've been ordering office supplies for my business from StarScrib for over a year now. Their delivery is always prompt, and the products are of great quality. Highly recommended!", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d" },
-    { name: "Arjun Mehta", role: "College Student", text: "The notebooks I bought are perfect for my college notes. The paper quality is excellent, and there's no ink bleeding. Plus, the online ordering process was super easy!", avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79" },
-  ];
+  const [testimonials, setTestimonials] = useState([]);
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || '';
+      if (!scriptUrl) return;
+
+      try {
+        const response = await fetch(scriptUrl);
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const mapData = data.slice(-3).map(row => ({
+            name: row.name || 'Anonymous',
+            role: row.rating ? `${row.rating} Stars Rating` : 'Customer Feedback',
+            text: row.message || '',
+            avatar: "https://images.unsplash.com/photo-1606121537863-3fdbe9f3e42a"
+          }));
+          
+          setTestimonials(mapData.reverse().slice(0, 3));
+        }
+      } catch (error) {
+        console.error('Failed to fetch testimonials tracking from Google Sheets:', error);
+      }
+    };
+    fetchFeedback();
+  }, []);
 
   return (
     <section className={cn("py-16", theme === 'dark' ? 'bg-orange-950/20' : 'bg-orange-50/60')}>
@@ -303,7 +325,7 @@ const TestimonialSection = () => {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {testimonials.map((testimonial, index) => (
+          {testimonials.length > 0 ? testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
               variants={itemVariants}
@@ -314,7 +336,7 @@ const TestimonialSection = () => {
                   <img 
                     alt={`${testimonial.name} avatar`}
                     className="w-12 h-12 rounded-full"
-                   src="https://images.unsplash.com/photo-1606121537863-3fdbe9f3e42a" />
+                   src={testimonial.avatar || "https://images.unsplash.com/photo-1606121537863-3fdbe9f3e42a"} />
                 </div>
                 <div>
                   <h4 className="font-semibold text-foreground">{testimonial.name}</h4>
@@ -323,7 +345,11 @@ const TestimonialSection = () => {
               </div>
               <p className="text-foreground/90">{testimonial.text}</p>
             </motion.div>
-          ))}
+          )) : (
+            <div className="col-span-1 md:col-span-3 text-center text-muted-foreground py-8">
+              No feedback available at the moment. Be the first to share your experience!
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Award, Users, Target, Heart, Star, Shield, Truck, Clock } from 'lucide-react';
+import { Award, Users, Target, Heart, Star, Shield, Truck, Clock, Send } from 'lucide-react';
 
 const AboutPage = () => {
   const stats = [
@@ -60,6 +60,45 @@ const AboutPage = () => {
       image: '/api/placeholder/300/300'
     }
   ];
+
+  const [feedback, setFeedback] = useState({ name: '', email: '', message: '', rating: 5 });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    const scriptUrl = import.meta.env.VITE_GOOGLE_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1XTymoadyk8SjdU81FEYXtgugWpa1Xza6JjBrFvrHSW0/edit?usp=sharing';
+
+    if (!scriptUrl) {
+      // Simulate API call if no URL
+      setTimeout(() => {
+        setIsSubmitted(true);
+        setFeedback({ name: '', email: '', message: '', rating: 5 });
+        setTimeout(() => setIsSubmitted(false), 3000);
+      }, 1000);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('name', feedback.name);
+      formData.append('email', feedback.email);
+      formData.append('message', feedback.message);
+      formData.append('rating', feedback.rating);
+      formData.append('date', new Date().toLocaleDateString());
+
+      await fetch(scriptUrl, {
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors'
+      });
+
+      setIsSubmitted(true);
+      setFeedback({ name: '', email: '', message: '', rating: 5 });
+      setTimeout(() => setIsSubmitted(false), 3000);
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -266,6 +305,117 @@ const AboutPage = () => {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Feedback Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">Share Your Experience</h2>
+            <div className="w-24 h-1 bg-primary mx-auto mb-8"></div>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              We value your feedback! Let us know about your experience with StarScrib.
+            </p>
+          </motion.div>
+
+          <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            {isSubmitted ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Thank You!</h3>
+                <p className="text-gray-600 dark:text-gray-300">Your feedback has been successfully submitted and helps us improve our service.</p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={feedback.name}
+                      onChange={(e) => setFeedback({ ...feedback, name: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={feedback.email}
+                      onChange={(e) => setFeedback({ ...feedback, email: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Rating
+                  </label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setFeedback({ ...feedback, rating: star })}
+                        className="focus:outline-none transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className={`w-8 h-8 ${
+                            feedback.rating >= star
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300 dark:text-gray-600'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Your Experience
+                  </label>
+                  <textarea
+                    required
+                    rows="4"
+                    value={feedback.message}
+                    onChange={(e) => setFeedback({ ...feedback, message: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors resize-none"
+                    placeholder="Tell us about your experience..."
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 group"
+                >
+                  <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Submit Feedback
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </section>
