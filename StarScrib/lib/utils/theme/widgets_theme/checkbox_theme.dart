@@ -1,0 +1,43 @@
+import 'package:flutter/material.dart';
+import 'package:starscrib/utils/constants/colors.dart';
+import 'package:starscrib/utils/constants/sizes.dart';
+
+class UCheckBoxTheme {
+  UCheckBoxTheme._();
+
+  static CheckboxThemeData lightCheckboxTheme = CheckboxThemeData(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(USizes.xs)),
+    checkColor: WidgetStateProperty.resolveWith((states) {
+      if(states.contains(WidgetState.selected)) {
+        return UColors.white;
+      } else {
+        return UColors.black;
+      }
+    }),
+    fillColor: WidgetStateProperty.resolveWith((states) {
+      if(states.contains(WidgetState.selected)) {
+        return UColors.primary;
+      } else {
+        return Colors.transparent;
+      }
+    }),
+  );
+
+  static CheckboxThemeData darkCheckboxTheme = CheckboxThemeData(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(USizes.xs)),
+    checkColor: WidgetStateProperty.resolveWith((states) {
+      if(states.contains(WidgetState.selected)) {
+        return UColors.white;
+      } else {
+        return UColors.black;
+      }
+    }),
+    fillColor: WidgetStateProperty.resolveWith((states) {
+      if(states.contains(WidgetState.selected)) {
+        return UColors.primary;
+      } else {
+        return Colors.transparent;
+      }
+    }),
+  );
+}
